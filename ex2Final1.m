@@ -51,13 +51,12 @@ function [reconstructionError, filteredSignals, reconstructedSignal] = filterAnd
     % Convolve with each highpass filter and normalize
     filteredSignals = zeros(N, numFilters);
     for i = 1:numFilters
-        filteredSignal = conv(f, gaborBank(i, :), 'same');
+        filteredSignal = conv(f, gaborBank(i, :), 'same'); %The 'same' argument ensures the output signal (lowpass_filtered) has the same length as the original 
         filteredSignals(:, i) = filteredSignal / sum(abs(filteredSignal));
     end
     
     % Reconstruction using highpass and lowpass filters
-    reconstructedSignal = sum(filteredSignals, 2) + lowpass_filtered;
-    
+    reconstructedSignal = sum(filteredSignals, 2) + lowpass_filtered;  % Sums the filtered signals across the second dimension (i.e., each row). This combines the high-frequency components obtained from the different highpass filters.
     % Compute reconstruction error
     reconstructionError = norm(f - reconstructedSignal) / norm(f);
 end
