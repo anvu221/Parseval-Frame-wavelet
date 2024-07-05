@@ -33,8 +33,9 @@ function gabor = create1DGaborFilter(sigma, theta, lambda, gamma, psi)
     y_theta = x * sin(theta);
     
     gb = exp(-0.5 * (x_theta.^2 + gamma^2 * y_theta.^2) / sigma^2) .* cos(2 * pi * x_theta / lambda + psi);
-    gb = gb - mean(gb); % Make the sum of coefficients zero
-    gb(end) = gb(end) - sum(gb); % Adjust the last element to ensure zero sum
+    gb = gb - mean(gb); % Subtract the mean from the coefficients to make them zero-mean
+    gb(end) = gb(end) - sum(gb); % Adjust the last element to ensure the exact zero-sum condition
+    
     gabor = gb;
 end
 
@@ -67,7 +68,7 @@ function [reconstructionError, reconstructedSignal, filteredSignals, highpassSum
 end
 
 % Parameters
-N = 500; % Number of sample points
+N = 90000; % Number of sample points
 a = 2; % Example constant for the function f(x)
 
 % Define the function f as a column vector in the interval [-2, 2]
@@ -89,6 +90,14 @@ lowpass = [0.0000    0.0002    0.0018    0.0085    0.0278    0.0667    0.1222   
 % Add all elements of the lowpass filter together
 lowpass_sum = sum(lowpass);
 
+% Print the filters
+disp('Lowpass filter:');
+disp(lowpass);
+for i = 1:numFilters
+    disp(['Highpass filter ' num2str(i) ':']);
+    disp(gaborBank(i, :));
+end
+
 % Filter and reconstruct the function
 [reconstructionError, reconstructedSignal, filteredSignals, highpassSums] = filterAndReconstruct1DFunction(f, gaborBank, lowpass);
 
@@ -104,6 +113,10 @@ title('Reconstructed Function');
 % Display reconstruction error and sum of lowpass filter
 disp(['Reconstruction Error: ' num2str(reconstructionError)]);
 disp(['Sum of Lowpass Filter: ' num2str(lowpass_sum)]);
+
+% Add a text box below the plots with the reconstruction error
+str = ['Reconstruction Error: ' num2str(reconstructionError)];
+annotation('textbox', [0.4, 0.05, 0.2, 0.05], 'String', str, 'FontSize', 12, 'Color', 'red', 'BackgroundColor', 'white', 'EdgeColor', 'none', 'HorizontalAlignment', 'center');
 
 % Display the sum of the coefficients for each highpass filter
 for i = 1:numFilters
